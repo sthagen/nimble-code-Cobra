@@ -1968,9 +1968,15 @@ pre_scan(char *bc)	// non-generic commands
 		}
 		break;
 
-	case 'j':	// json msg
-		if (strncmp(bc, "json ", strlen("json ")) == 0)
-		{	json(bc + strlen("json "));
+	case 'j':	// json [msg]
+		if (strncmp(bc, "json", strlen("json")) == 0)
+		{	nr_marks(0);
+			if (cnt > 0)
+			{	if (strlen(bc) > strlen("json "))
+				{	json(bc + strlen("json "));
+				} else
+				{	json(" ");
+			}	}
 			return 1;
 		} // else it maps to j[ump]
 		break;
@@ -1978,7 +1984,6 @@ pre_scan(char *bc)	// non-generic commands
 	default:
 		break;
 	}
-
 	return 2;	// not handled yet
 }
 
@@ -3192,11 +3197,12 @@ help(char *s, char *unused)	// 1
 	printf("  %8s  %c %s\n", "fcg", ' ',            "[f|*] [g] show fct call graph [from fct f] [to fct g]");
 	printf("  %8s  %c %s\n", "ff", ' ',		"f         find function f");
 	printf("  %8s  %c %s\n", "ft", ' ',		"t         mark the defintion of structure type t");
+	printf("  %8s  %c %s\n", "json", ' ',		"[msg]     print results of a pattern search (pe) in json format");
 	printf("  %8s  %c %s\n", "ncore", ' ',		"n         set the number of cores to use to n");
 	printf("  %8s  %c %s\n", "quiet", ' ',		"on|off    more/less verbose in script executions");
 	printf("  %8s  %c %s\n", "save", ' ',		"n         alternative syntax for: >n");
 	printf("  %8s  %c %s\n", "re", ' ',             "expr      match a token expression (cf commandline option -e expr)");
-	printf("  %8s  %c %s\n", "pat", ' ',            "pattern   match a pattern (cf commandline option -pattern expr)");
+	printf("  %8s  %c %s\n", "pat", ' ',            "pattern   match a pattern (cf commandline option -pe expr)");
 	printf("  %8s  %c %s\n", "pe", ' ',             "pattern   same as pat or pattern (pattern expression)");
 	printf("  %8s  %c %s\n", "restore", ' ',	"n         alternative syntax for: <n");
 	printf("  %8s  %c %s\n", "setlinks", ' ',	"          set .bound field for if/else/switch/case/break stmnts");
@@ -3300,6 +3306,12 @@ cleanup(int unused)
 }
 
 // externally visible functions:
+
+void
+set_cnt(int n)
+{
+	cnt = n;
+}
 
 void
 show_error(int p_lnr)
