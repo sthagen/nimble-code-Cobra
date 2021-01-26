@@ -572,6 +572,7 @@ usage(char *s)
 	fprintf(stderr, "\t-Nn                 -- use n threads\n");
 	fprintf(stderr, "\t-pattern \"tokens\"   -- (or -pat) like -expr but simplified: (|)+? are regular symbols\n");
 	fprintf(stderr, "\t-pe \"tokens\"        -- same as -pattern: pattern expression matching\n");
+	fprintf(stderr, "\t                       (|)+? can be turned back into meta-symbols by preceding them with \\\n");
 	fprintf(stderr, "\t                       * and ] are meta-symbols unless preceded by a space\n");
 	fprintf(stderr, "\t                       [ is a meta-symbol unless followed by a space\n");
 	fprintf(stderr, "\t                       a tokenpattern preceded by / is a regular expr, escape with \\\n");
@@ -828,22 +829,41 @@ pattern(char *p)
 {	char *n = (char *) emalloc(2*strlen(p)+1, 26);
 	char *m = n;
 	char *q = p;
-	int len = strlen(p);
+	int len;
 	int inrange = 0;
 
-	// first check if the pattern is quoted:
+	// check if the pattern is quoted:
 	// e.g. when typed inline, and remove quotes
 
+	len = strlen(p);
 	if ((*p == '\'' || *p == '\"')
 	&&   p[len-1] == *p)
 	{	p[len-1] = '\0';
 		p++;
+		len -= 2;
 	}
+
+	// insert or remove escapes for
+	// intepretation as a code pattern
+	// instead of a standard regex
 
 	while (len > 0)
 	{	switch (*p) {
 		case '\\':
-			*n++ = *p++;
+			// escaped symbols (|)+?
+			// are now not-literal but meta
+			switch (*(p+1)) {
+			case '(':
+			case ')':
+			case '|':
+			case '+':
+			case '?':
+				// remove the '\\'
+				p++;
+				break;
+			default:
+				*n++ = *p++;
+			}
 			*n++ = *p++;
 			len -= 2;
 			break;
@@ -881,7 +901,7 @@ pattern(char *p)
 			break;
 		}
 	}
-	// printf("inp: %s\nout: %s\n", q, m); exit(1);
+//	printf("inp: %s\nout: %s\n", q, m);
 	return m;
 }
 
