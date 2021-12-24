@@ -36,7 +36,6 @@ int p_debug;
 int preserve;
 int python;
 int read_stdin;
-int stream;
 int stream_lim = 100000;
 int stream_margin = 100;
 int stream_margin_set;
@@ -46,8 +45,6 @@ int scrub;
 int verbose;
 int view;
 int with_comments;
-int json_format;
-int json_plus;
 
 ArgList		*cl_var;	// -var name=xxx, cobra_lib.c
 pthread_t	*t_id;
@@ -55,7 +52,6 @@ pthread_t	*t_id;
 char	*C_BASE  = ".";		// reassigned in main
 char	*C_TMP = "";		// reassigned in main
 char	*cobra_target;		// -f xxx
-char	*cobra_texpr;		// -e xxx
 char	*cobra_commands;	// -c xxx
 char	*cwe_args;		// standalone cwe checker
 char	*progname = "";		// e.g. cobra or cwe
@@ -76,6 +72,7 @@ static int	 with_qual = 1;
 static int	 with_type = 1;
 
 extern Prim	*prim, *plst;
+extern int	 json_plus;
 
 extern void	 set_ranges(Prim *, Prim *);
 extern void	 recycle_token(Prim *, Prim *);
@@ -1551,7 +1548,7 @@ cwe_mode:	no_match = 1;	// for consistency with -f
 			return 1;
 	}	}
 
-	if (read_stdin)
+	if (read_stdin && !view)
 	{	if (no_cpp)
 		{	fprintf(stderr, "%s: reading stdin\n", progname);
 			(void) add_file("", 0, 1);	// keep single-core
